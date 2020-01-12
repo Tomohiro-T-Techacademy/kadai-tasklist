@@ -36,11 +36,26 @@ public class IndexServlet extends HttpServlet {
         // TODO Auto-generated method stub
         EntityManager em = DBUtil.createEntityManager();
 
+        int page = 1;
+        try {
+            page = Integer.parseInt(request.getParameter("page"));
+        } catch(NumberFormatException e) {}
+
+        // 最大件数と開始位置を指定してメッセージを取得
         List<Tasks> Tasks = em.createNamedQuery("getAllTasks", Tasks.class)
+                                   .setFirstResult(15 * (page - 1))
+                                   .setMaxResults(15)
                                    .getResultList();
+
+        // 全件数を取得
+        long Tasks_count = (long)em.createNamedQuery("getTasksCount", Long.class)
+                                      .getSingleResult();
+
         em.close();
 
         request.setAttribute("Tasks", Tasks);
+        request.setAttribute("Tasks_count", Tasks_count);     // 全件数
+        request.setAttribute("page", page);                         // ページ数
 
      // リクエストスコープに保存する（セッションスコープからは削除）
         if(request.getSession().getAttribute("flush") != null) {
